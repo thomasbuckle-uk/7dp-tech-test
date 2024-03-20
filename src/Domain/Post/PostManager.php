@@ -23,10 +23,4 @@ class PostManager
         $this->em->flush();
     }
 
-    public function findPost($id): Post
-    {
-        $postRepository = $this->em->getRepository(Post::class);
-
-        return $postRepository->findOneBy(['id' => $id]);
-    }
 }
