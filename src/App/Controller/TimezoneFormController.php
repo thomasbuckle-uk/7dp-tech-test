@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use DateTime;
-use DateTimeZone;
+use Domain\Timezone\TimezoneFormRequestDto;
+use Domain\Timezone\TimezoneParsingService;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -17,6 +17,16 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TimezoneFormController extends AbstractController
 {
+
+
+    private TimezoneParsingService $timezoneParser;
+
+    public function __construct(
+        TimezoneParsingService $timezoneParser
+    )
+    {
+        $this->timezoneParser = $timezoneParser;
+    }
 
     /**
      * @Route("/timezone", name="app_timezone_index")
@@ -37,27 +47,12 @@ class TimezoneFormController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
 
             $timezoneData = $form->getData();
-
-
-            $timezone = new DateTimeZone($timezoneData['timezone']);
-
-            $now = new DateTime('now', $timezone);
-            $tzOffsetMinutes = $timezone->getOffset($now) / 60;
-
-            $year = date('Y', $timezoneData['date']->getTimestamp());
-            $month = date('F', $timezoneData['date']->getTimestamp());
-            $febDaysInMonth = cal_days_in_month(CAL_GREGORIAN, 2, $year);
-            $userDaysInMonth = cal_days_in_month(CAL_GREGORIAN, $timezoneData['date']->format('m'), $year);
+            $tzRequestDto = new TimezoneFormRequestDto($timezoneData['date'], $timezoneData['timezone']);
+            $response = $this->timezoneParser->parse($tzRequestDto);
 
             return $this->render(
                 'timezone/success.html.twig',
-                [
-                    'timezone' => $timezoneData['timezone'],
-                    'tzOffsetMinutes' => $tzOffsetMinutes,
-                    'febDaysInMonth' => $febDaysInMonth,
-                    'month' => $month,
-                    'userDaysInMonth' => $userDaysInMonth
-                ]
+                (array)$response
             );
         }
 
