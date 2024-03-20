@@ -15,6 +15,7 @@ RUN pecl install yaml-2.2.1 && \
     docker-php-ext-enable yaml && \
     docker-php-ext-install zip && \
     docker-php-ext-install exif && \
+    docker-php-ext-install calendar && \
     docker-php-ext-install sockets
 
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
